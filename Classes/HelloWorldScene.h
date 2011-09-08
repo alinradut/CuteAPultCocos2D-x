@@ -25,7 +25,10 @@ public:
     void tick(cocos2d::ccTime dt);
     
 private:
+    
     b2World* world;
+    b2Fixture *armFixture;
+    b2Body *armBody;
 };
 
 #endif // __HELLO_WORLD_H__

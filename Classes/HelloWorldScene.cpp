@@ -91,11 +91,11 @@ HelloWorld::HelloWorld()
 	b2PolygonShape groundBox;		
 	
 	// bottom
-	groundBox.SetAsEdge(b2Vec2(0,0), b2Vec2(screenSize.width/PTM_RATIO,0));
+    groundBox.SetAsEdge(b2Vec2(0,FLOOR_HEIGHT/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,FLOOR_HEIGHT/PTM_RATIO));
 	groundBody->CreateFixture(&groundBox, 0);
 	
 	// top
-	groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO));
+	groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,screenSize.height/PTM_RATIO));
 	groundBody->CreateFixture(&groundBox, 0);
 	
 	// left
@@ -103,8 +103,28 @@ HelloWorld::HelloWorld()
 	groundBody->CreateFixture(&groundBox, 0);
 	
 	// right
-	groundBox.SetAsEdge(b2Vec2(screenSize.width/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width/PTM_RATIO,0));
+	groundBox.SetAsEdge(b2Vec2(screenSize.width*2.0f/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,0));
 	groundBody->CreateFixture(&groundBox, 0);
+    
+    // Create the catapult's arm
+    //
+    CCSprite *arm = CCSprite::spriteWithFile("catapult_arm.png");
+    this->addChild(arm, 1);
+    
+    b2BodyDef armBodyDef;
+    armBodyDef.type = b2_dynamicBody;
+    armBodyDef.linearDamping = 1;
+    armBodyDef.angularDamping = 1;
+    armBodyDef.position.Set(230.0f/PTM_RATIO,(FLOOR_HEIGHT+91.0f)/PTM_RATIO);
+    armBodyDef.userData = arm;
+    armBody = world->CreateBody(&armBodyDef);
+    
+    b2PolygonShape armBox;
+    b2FixtureDef armBoxDef;
+    armBoxDef.shape = &armBox;
+    armBoxDef.density = 0.3F;
+    armBox.SetAsBox(11.0f/PTM_RATIO, 91.0f/PTM_RATIO);
+    armFixture = armBody->CreateFixture(&armBoxDef);
     
 	schedule( schedule_selector(HelloWorld::tick) );
 }
