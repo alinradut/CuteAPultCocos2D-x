@@ -9,7 +9,8 @@
 
 using namespace cocos2d;
 
-#define PTM_RATIO 32
+#define PTM_RATIO       32
+#define FLOOR_HEIGHT    62.0f
 enum 
 {
 	kTagTileMap = 1,
@@ -49,6 +50,34 @@ HelloWorld::HelloWorld()
      m_debugDraw->SetFlags(flags);		
      */
 	
+    CCSprite *sprite = CCSprite::spriteWithFile("bg.png");
+    sprite->setAnchorPoint(CCPointZero);
+    this->addChild(sprite, -1);
+    
+    sprite = CCSprite::spriteWithFile("catapult_base_2.png");
+    sprite->setAnchorPoint(CCPointZero);
+    sprite->setPosition(CCPointMake(181.0, FLOOR_HEIGHT));
+    this->addChild(sprite, 0);
+    
+    sprite = CCSprite::spriteWithFile("squirrel_1.png");
+    sprite->setAnchorPoint(CCPointZero);
+    sprite->setPosition(CCPointMake(11.0, FLOOR_HEIGHT));
+    this->addChild(sprite, 0);
+    
+    sprite = CCSprite::spriteWithFile("catapult_base_1.png");
+    sprite->setAnchorPoint(CCPointZero);
+    sprite->setPosition(CCPointMake(181.0, FLOOR_HEIGHT));
+    this->addChild(sprite, 9);
+    
+    sprite = CCSprite::spriteWithFile("squirrel_2.png");
+    sprite->setAnchorPoint(CCPointZero);
+    sprite->setPosition(CCPointMake(240.0, FLOOR_HEIGHT));
+    this->addChild(sprite, 9);
+    
+    sprite = CCSprite::spriteWithFile("fg.png");
+    sprite->setAnchorPoint(CCPointZero);
+    this->addChild(sprite, 10);
+    
 	// Define the ground body.
 	b2BodyDef groundBodyDef;
 	groundBodyDef.position.Set(0, 0); // bottom-left corner
