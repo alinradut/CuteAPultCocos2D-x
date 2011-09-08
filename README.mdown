@@ -1,0 +1,16 @@
+This is a port of the Objective C code from Gustavo Ambrozio's How To Make a Catapult Shooting Game tutorial found here:
+http://www.raywenderlich.com/4756/how-to-make-a-catapult-shooting-game-with-cocos2d-and-box2d-part-1
+
+I tried to follow Gustavo's conventions to a certain degree, however I took a different path for naming instance member variables.
+
+The code was tagged after each chapter was completed as follows:
+
+https://github.com/clawoo/CuteAPultCocos2D-x/tree/CleanUpProject
+
+https://github.com/clawoo/CuteAPultCocos2D-x/tree/BeforePhysics
+
+https://github.com/clawoo/CuteAPultCocos2D-x/tree/CatapultJoint
+
+https://github.com/clawoo/CuteAPultCocos2D-x/tree/MouseJoint
+
+Enjoy :)
