@@ -5,8 +5,8 @@
 //  Created by Clawoo on 9/8/11.
 //  Copyright __MyCompanyName__ 2011. All rights reserved.
 //
-#ifndef __HELLO_WORLD_H__
-#define __HELLO_WORLD_H__
+#ifndef __HELLO_m_worldH__
+#define __HELLO_m_worldH__
 
 // When you import this file, you import all the cocos2d classes
 #include "cocos2d.h"
@@ -26,9 +26,10 @@ public:
     
 private:
     
-    b2World* world;
-    b2Fixture *armFixture;
-    b2Body *armBody;
+    b2World* m_world;
+    b2Fixture *m_armFixture;
+    b2Body *m_armBody;
+    b2RevoluteJoint *m_armJoint;
 };
 
-#endif // __HELLO_WORLD_H__
+#endif // __HELLO_m_worldH__

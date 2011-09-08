@@ -33,9 +33,9 @@ HelloWorld::HelloWorld()
 	bool doSleep = true;
     
 	// Construct a world object, which will hold and simulate the rigid bodies.
-	world = new b2World(gravity, doSleep);
+	m_world = new b2World(gravity, doSleep);
     
-	world->SetContinuousPhysics(true);
+	m_world->SetContinuousPhysics(true);
     
     /*	
      m_debugDraw = new GLESDebugDraw( PTM_RATIO );
@@ -85,7 +85,7 @@ HelloWorld::HelloWorld()
 	// Call the body factory which allocates memory for the ground body
 	// from a pool and creates the ground box shape (also from a pool).
 	// The body is also added to the world.
-	b2Body* groundBody = world->CreateBody(&groundBodyDef);
+	b2Body* groundBody = m_world->CreateBody(&groundBodyDef);
 	
 	// Define the ground box shape.
 	b2PolygonShape groundBox;		
@@ -117,22 +117,32 @@ HelloWorld::HelloWorld()
     armBodyDef.angularDamping = 1;
     armBodyDef.position.Set(230.0f/PTM_RATIO,(FLOOR_HEIGHT+91.0f)/PTM_RATIO);
     armBodyDef.userData = arm;
-    armBody = world->CreateBody(&armBodyDef);
+    m_armBody = m_world->CreateBody(&armBodyDef);
     
     b2PolygonShape armBox;
     b2FixtureDef armBoxDef;
     armBoxDef.shape = &armBox;
     armBoxDef.density = 0.3F;
     armBox.SetAsBox(11.0f/PTM_RATIO, 91.0f/PTM_RATIO);
-    armFixture = armBody->CreateFixture(&armBoxDef);
+    m_armFixture = m_armBody->CreateFixture(&armBoxDef);
+    
+    b2RevoluteJointDef armJointDef;
+    armJointDef.Initialize(groundBody, m_armBody, b2Vec2(233.0f/PTM_RATIO, FLOOR_HEIGHT/PTM_RATIO));
+    armJointDef.enableMotor = true;
+    armJointDef.enableLimit = true;
+    armJointDef.motorSpeed  = -1260;
+    armJointDef.lowerAngle  = CC_DEGREES_TO_RADIANS(9);
+    armJointDef.upperAngle  = CC_DEGREES_TO_RADIANS(75);
+    armJointDef.maxMotorTorque = 4800;
+    m_armJoint = (b2RevoluteJoint*)m_world->CreateJoint(&armJointDef);
     
 	schedule( schedule_selector(HelloWorld::tick) );
 }
 
 HelloWorld::~HelloWorld()
 {
-	delete world;
-	world = NULL;
+	delete m_world;
+	m_world = NULL;
 	
 	//delete m_debugDraw;
 }
@@ -166,10 +176,10 @@ void HelloWorld::tick(ccTime dt)
     
 	// Instruct the world to perform a single step of simulation. It is
 	// generally best to keep the time step and iterations fixed.
-	world->Step(dt, velocityIterations, positionIterations);
+	m_world->Step(dt, velocityIterations, positionIterations);
 	
 	//Iterate over the bodies in the physics world
-	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext())
+	for (b2Body* b = m_world->GetBodyList(); b; b = b->GetNext())
 	{
 		if (b->GetUserData() != NULL) {
 			//Synchronize the AtlasSprites position and rotation with the corresponding body
