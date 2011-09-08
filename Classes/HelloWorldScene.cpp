@@ -85,26 +85,26 @@ HelloWorld::HelloWorld()
 	// Call the body factory which allocates memory for the ground body
 	// from a pool and creates the ground box shape (also from a pool).
 	// The body is also added to the world.
-	b2Body* groundBody = m_world->CreateBody(&groundBodyDef);
+	m_groundBody = m_world->CreateBody(&groundBodyDef);
 	
 	// Define the ground box shape.
 	b2PolygonShape groundBox;		
 	
 	// bottom
     groundBox.SetAsEdge(b2Vec2(0,FLOOR_HEIGHT/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,FLOOR_HEIGHT/PTM_RATIO));
-	groundBody->CreateFixture(&groundBox, 0);
+	m_groundBody->CreateFixture(&groundBox, 0);
 	
 	// top
 	groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,screenSize.height/PTM_RATIO));
-	groundBody->CreateFixture(&groundBox, 0);
+	m_groundBody->CreateFixture(&groundBox, 0);
 	
 	// left
 	groundBox.SetAsEdge(b2Vec2(0,screenSize.height/PTM_RATIO), b2Vec2(0,0));
-	groundBody->CreateFixture(&groundBox, 0);
+	m_groundBody->CreateFixture(&groundBox, 0);
 	
 	// right
 	groundBox.SetAsEdge(b2Vec2(screenSize.width*2.0f/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,0));
-	groundBody->CreateFixture(&groundBox, 0);
+	m_groundBody->CreateFixture(&groundBox, 0);
     
     // Create the catapult's arm
     //
@@ -127,14 +127,16 @@ HelloWorld::HelloWorld()
     m_armFixture = m_armBody->CreateFixture(&armBoxDef);
     
     b2RevoluteJointDef armJointDef;
-    armJointDef.Initialize(groundBody, m_armBody, b2Vec2(233.0f/PTM_RATIO, FLOOR_HEIGHT/PTM_RATIO));
+    armJointDef.Initialize(m_groundBody, m_armBody, b2Vec2(233.0f/PTM_RATIO, FLOOR_HEIGHT/PTM_RATIO));
     armJointDef.enableMotor = true;
     armJointDef.enableLimit = true;
-    armJointDef.motorSpeed  = -1260;
+    armJointDef.motorSpeed  = -10; //-1260;
     armJointDef.lowerAngle  = CC_DEGREES_TO_RADIANS(9);
     armJointDef.upperAngle  = CC_DEGREES_TO_RADIANS(75);
     armJointDef.maxMotorTorque = 4800;
     m_armJoint = (b2RevoluteJoint*)m_world->CreateJoint(&armJointDef);
+    
+    m_mouseJoint = NULL;
     
 	schedule( schedule_selector(HelloWorld::tick) );
 }
@@ -188,6 +190,55 @@ void HelloWorld::tick(ccTime dt)
 			myActor->setRotation( -1 * CC_RADIANS_TO_DEGREES(b->GetAngle()) );
 		}	
 	}
+}
+
+void HelloWorld::ccTouchesBegan(cocos2d::CCSet* touches, cocos2d::CCEvent* event)
+{
+    if (m_mouseJoint != NULL)
+    {
+        return;
+    }
+    
+    CCTouch *myTouch = (CCTouch *)touches->anyObject();
+    CCPoint location = myTouch->locationInView(myTouch->view());
+    location = CCDirector::sharedDirector()->convertToGL(location);
+    b2Vec2 locationWorld = b2Vec2(location.x/PTM_RATIO, location.y/PTM_RATIO);
+    
+    if (locationWorld.x < m_armBody->GetWorldCenter().x + 50.0/PTM_RATIO)
+    {
+        b2MouseJointDef md;
+        md.bodyA = m_groundBody;
+        md.bodyB = m_armBody;
+        md.target = locationWorld;
+        md.maxForce = 2000;
+        
+        m_mouseJoint = (b2MouseJoint *)m_world->CreateJoint(&md);
+    }
+}
+
+void HelloWorld::ccTouchesMoved(cocos2d::CCSet* touches, cocos2d::CCEvent* event)
+{
+    if (m_mouseJoint == NULL)
+    {
+        return;
+    }
+    
+    CCTouch *myTouch = (CCTouch *)touches->anyObject();
+    CCPoint location = myTouch->locationInView(myTouch->view());
+    location = CCDirector::sharedDirector()->convertToGL(location);
+    b2Vec2 locationWorld = b2Vec2(location.x/PTM_RATIO, location.y/PTM_RATIO);
+    
+    m_mouseJoint->SetTarget(locationWorld);
+}
+
+void HelloWorld::ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event)
+{
+    if (m_mouseJoint != NULL)
+    {
+        m_world->DestroyJoint(m_mouseJoint);
+        m_mouseJoint = NULL;
+        return;
+    }
 }
 
 CCScene* HelloWorld::scene()

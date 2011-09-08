@@ -23,13 +23,18 @@ public:
     // adds a new sprite at a given coordinate
     virtual void draw();
     void tick(cocos2d::ccTime dt);
-    
+    virtual void ccTouchesBegan(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
+    virtual void ccTouchesMoved(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
+    virtual void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
+
 private:
     
     b2World* m_world;
+    b2Body* m_groundBody;
     b2Fixture *m_armFixture;
     b2Body *m_armBody;
     b2RevoluteJoint *m_armJoint;
+    b2MouseJoint *m_mouseJoint;
 };
 
 #endif // __HELLO_m_worldH__
