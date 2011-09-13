@@ -5,12 +5,14 @@ I tried to follow Gustavo's conventions to a certain degree, however I took a di
 
 The code was tagged after each chapter was completed as follows:
 
-https://github.com/clawoo/CuteAPultCocos2D-x/tree/CleanUpProject
+* https://github.com/clawoo/CuteAPultCocos2D-x/tree/CleanUpProject
 
-https://github.com/clawoo/CuteAPultCocos2D-x/tree/BeforePhysics
+* https://github.com/clawoo/CuteAPultCocos2D-x/tree/BeforePhysics
 
-https://github.com/clawoo/CuteAPultCocos2D-x/tree/CatapultJoint
+* https://github.com/clawoo/CuteAPultCocos2D-x/tree/CatapultJoint
 
-https://github.com/clawoo/CuteAPultCocos2D-x/tree/MouseJoint
+* https://github.com/clawoo/CuteAPultCocos2D-x/tree/MouseJoint
+
+* https://github.com/clawoo/CuteAPultCocos2D-x/tree/BulletCreation
 
 Enjoy :)
