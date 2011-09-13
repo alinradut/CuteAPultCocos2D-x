@@ -282,6 +282,21 @@ void HelloWorld::tick(ccTime dt)
             
         }
     }
+    
+    // Bullet is moving.
+    if (m_bulletBody && m_bulletJoint == NULL)
+    {
+        b2Vec2 position = m_bulletBody->GetPosition();
+        CCPoint myPosition = this->getPosition();
+        CCSize screenSize = CCDirector::sharedDirector()->getWinSize();
+        
+        // Move the camera.
+        if (position.x > screenSize.width / 2.0f / PTM_RATIO)
+        {
+            myPosition.x = -MIN(screenSize.width * 2.0f - screenSize.width, position.x * PTM_RATIO - screenSize.width / 2.0f);
+            this->setPosition(myPosition);
+        }
+    }
 }
 
 void HelloWorld::ccTouchesBegan(cocos2d::CCSet* touches, cocos2d::CCEvent* event)
