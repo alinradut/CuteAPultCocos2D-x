@@ -26,15 +26,23 @@ public:
     virtual void ccTouchesBegan(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
     virtual void ccTouchesMoved(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
     virtual void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
-
+    void createBullets(int count);
+    bool attachBullet();
+    void resetGame();
 private:
-    
+    std::vector<b2Body *> m_bullets;
+    int m_currentBullet;
     b2World* m_world;
     b2Body* m_groundBody;
     b2Fixture *m_armFixture;
     b2Body *m_armBody;
     b2RevoluteJoint *m_armJoint;
     b2MouseJoint *m_mouseJoint;
+    
+    b2Body *m_bulletBody;
+    b2WeldJoint *m_bulletJoint;
+    
+    bool m_releasingArm;
 };
 
 #endif // __HELLO_m_worldH__

@@ -133,10 +133,18 @@ HelloWorld::HelloWorld()
     armJointDef.motorSpeed  = -10; //-1260;
     armJointDef.lowerAngle  = CC_DEGREES_TO_RADIANS(9);
     armJointDef.upperAngle  = CC_DEGREES_TO_RADIANS(75);
-    armJointDef.maxMotorTorque = 4800;
+    armJointDef.maxMotorTorque = 700;
     m_armJoint = (b2RevoluteJoint*)m_world->CreateJoint(&armJointDef);
     
     m_mouseJoint = NULL;
+    
+    // set up the time delay
+    CCDelayTime *delayAction = CCDelayTime::actionWithDuration(0.5f);
+    // perform the selector call
+    CCCallFunc *callSelectorAction = CCCallFunc::actionWithTarget(this, callfunc_selector(HelloWorld::resetGame));
+    this->runAction(CCSequence::actions(delayAction,
+                                        callSelectorAction,
+                                        NULL));
     
 	schedule( schedule_selector(HelloWorld::tick) );
 }
@@ -145,8 +153,77 @@ HelloWorld::~HelloWorld()
 {
 	delete m_world;
 	m_world = NULL;
-	
 	//delete m_debugDraw;
+}
+
+void HelloWorld::createBullets(int count)
+{
+    m_currentBullet = 0;
+    float pos = 62.0f;
+    
+    if (count > 0)
+    {
+        // delta is the spacing between corns
+        // 62 is the position o the screen where we want the corns to start appearing
+        // 165 is the position on the screen where we want the corns to stop appearing
+        // 30 is the size of the corn
+        
+        float delta = (count > 1)?((165.0f - 62.0f - 30.0f) / (count - 1)):0.0f;
+        
+        
+        for (int i=0; i<count; i++, pos += delta)
+        {
+            // Create the bullet
+            //
+            CCSprite *sprite = CCSprite::spriteWithFile("acorn.png");
+            this->addChild(sprite, 1);
+            
+            b2BodyDef bulletBodyDef;
+            bulletBodyDef.type = b2_dynamicBody;
+            bulletBodyDef.bullet = true;
+            bulletBodyDef.position.Set(pos/PTM_RATIO,(FLOOR_HEIGHT+15.0f)/PTM_RATIO);
+            bulletBodyDef.userData = sprite;
+            b2Body *bullet = m_world->CreateBody(&bulletBodyDef);
+            bullet->SetActive(false);
+            
+            b2CircleShape circle;
+            circle.m_radius = 15.0/PTM_RATIO;
+            
+            b2FixtureDef ballShapeDef;
+            ballShapeDef.shape = &circle;
+            ballShapeDef.density = 0.8f;
+            ballShapeDef.restitution = 0.2f;
+            ballShapeDef.friction = 0.99f;
+            bullet->CreateFixture(&ballShapeDef);
+            
+            m_bullets.push_back(bullet);
+        }
+    }
+}
+
+bool HelloWorld::attachBullet()
+{
+    if (m_currentBullet < m_bullets.size())
+    {
+        m_bulletBody = (b2Body*)m_bullets.at(m_currentBullet++);
+        m_bulletBody->SetTransform(b2Vec2(230.0f/PTM_RATIO, (155.0f+FLOOR_HEIGHT)/PTM_RATIO), 0.0f);
+        m_bulletBody->SetActive(true);
+        
+        b2WeldJointDef weldJointDef;
+        weldJointDef.Initialize(m_bulletBody, m_armBody, b2Vec2(230.0f/PTM_RATIO,(155.0f+FLOOR_HEIGHT)/PTM_RATIO));
+        weldJointDef.collideConnected = false;
+        
+        m_bulletJoint = (b2WeldJoint*)m_world->CreateJoint(&weldJointDef);
+        return true;
+    }
+    
+    return false;
+}
+
+void HelloWorld::resetGame()
+{
+    this->createBullets(4);
+    this->attachBullet();
 }
 
 void HelloWorld::draw()
@@ -190,6 +267,21 @@ void HelloWorld::tick(ccTime dt)
 			myActor->setRotation( -1 * CC_RADIANS_TO_DEGREES(b->GetAngle()) );
 		}	
 	}
+    
+    // Arm is being released
+    if (m_releasingArm && m_bulletJoint != NULL)
+    {
+        // Check if the arm reached the end so we can return the limits
+        if (m_armJoint->GetJointAngle() <= CC_DEGREES_TO_RADIANS(10))
+        {
+            m_releasingArm = false;
+            
+            // Destroy joint so the bullet will be free
+            m_world->DestroyJoint(m_bulletJoint);
+            m_bulletJoint = NULL;
+            
+        }
+    }
 }
 
 void HelloWorld::ccTouchesBegan(cocos2d::CCSet* touches, cocos2d::CCEvent* event)
@@ -235,6 +327,11 @@ void HelloWorld::ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event
 {
     if (m_mouseJoint != NULL)
     {
+        if (m_armJoint->GetJointAngle() >= CC_DEGREES_TO_RADIANS(20))
+        {
+            m_releasingArm = true;
+        }
+        
         m_world->DestroyJoint(m_mouseJoint);
         m_mouseJoint = NULL;
         return;
