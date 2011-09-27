@@ -28,9 +28,22 @@ public:
     virtual void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
     void createBullets(int count);
     bool attachBullet();
+    void resetBullet();
     void resetGame();
+    
+    void createTargets();
+    void createTarget(const char *imageName, 
+                      cocos2d::CCPoint position, 
+                      float rotation, 
+                      bool isCircle, 
+                      bool isStatic, 
+                      bool isEnemy);
+
 private:
     std::vector<b2Body *> m_bullets;
+    std::vector<b2Body *> m_targets;
+    std::vector<b2Body *> m_enemies;
+
     int m_currentBullet;
     b2World* m_world;
     b2Body* m_groundBody;
@@ -41,6 +54,7 @@ private:
     
     b2Body *m_bulletBody;
     b2WeldJoint *m_bulletJoint;
+    
     
     bool m_releasingArm;
 };

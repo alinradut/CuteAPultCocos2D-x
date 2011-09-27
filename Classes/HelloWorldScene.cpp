@@ -23,7 +23,6 @@ HelloWorld::HelloWorld()
 	setIsTouchEnabled( true );
     
 	CCSize screenSize = CCDirector::sharedDirector()->getWinSize();
-	//UXLOG(L"Screen width %0.2f screen height %0.2f",screenSize.width,screenSize.height);
     
 	// Define the gravity vector.
 	b2Vec2 gravity;
@@ -36,20 +35,7 @@ HelloWorld::HelloWorld()
 	m_world = new b2World(gravity, doSleep);
     
 	m_world->SetContinuousPhysics(true);
-    
-    /*	
-     m_debugDraw = new GLESDebugDraw( PTM_RATIO );
-     world->SetDebugDraw(m_debugDraw);
-     
-     uint flags = 0;
-     flags += b2DebugDraw::e_shapeBit;
-     flags += b2DebugDraw::e_jointBit;
-     flags += b2DebugDraw::e_aabbBit;
-     flags += b2DebugDraw::e_pairBit;
-     flags += b2DebugDraw::e_centerOfMassBit;
-     m_debugDraw->SetFlags(flags);		
-     */
-	
+
     CCSprite *sprite = CCSprite::spriteWithFile("bg.png");
     sprite->setAnchorPoint(CCPointZero);
     this->addChild(sprite, -1);
@@ -103,8 +89,8 @@ HelloWorld::HelloWorld()
 	m_groundBody->CreateFixture(&groundBox, 0);
 	
 	// right
-	groundBox.SetAsEdge(b2Vec2(screenSize.width*2.0f/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,0));
-	m_groundBody->CreateFixture(&groundBox, 0);
+//	groundBox.SetAsEdge(b2Vec2(screenSize.width*2.0f/PTM_RATIO,screenSize.height/PTM_RATIO), b2Vec2(screenSize.width*2.0f/PTM_RATIO,0));
+//	m_groundBody->CreateFixture(&groundBox, 0);
     
     // Create the catapult's arm
     //
@@ -145,7 +131,7 @@ HelloWorld::HelloWorld()
     this->runAction(CCSequence::actions(delayAction,
                                         callSelectorAction,
                                         NULL));
-    
+    //this->setPosition(CCPointMake(-480, 0));
 	schedule( schedule_selector(HelloWorld::tick) );
 }
 
@@ -153,7 +139,6 @@ HelloWorld::~HelloWorld()
 {
 	delete m_world;
 	m_world = NULL;
-	//delete m_debugDraw;
 }
 
 void HelloWorld::createBullets(int count)
@@ -201,6 +186,81 @@ void HelloWorld::createBullets(int count)
     }
 }
 
+void HelloWorld::createTargets()
+{
+    m_targets.clear();
+    m_enemies.clear();
+    
+    // First block
+    this->createTarget("brick_2.png", CCPointMake(675.0, FLOOR_HEIGHT), 0.0f, false, false, false);
+    this->createTarget("brick_1.png", CCPointMake(741.0, FLOOR_HEIGHT), 0.0f, false, false, false);
+    this->createTarget("brick_1.png", CCPointMake(741.0, FLOOR_HEIGHT+23.0f), 0.0f, false, false, false);
+    this->createTarget("brick_3.png", CCPointMake(672.0, FLOOR_HEIGHT+46.0f), 0.0f, false, false, false);
+    this->createTarget("brick_1.png", CCPointMake(707.0, FLOOR_HEIGHT+58.0f), 0.0f, false, false, false);
+    this->createTarget("brick_1.png", CCPointMake(707.0, FLOOR_HEIGHT+81.0f), 0.0f, false, false, false);
+    
+    this->createTarget("head_dog.png", CCPointMake(702.0, FLOOR_HEIGHT), 0.0f, true, false, true);
+    this->createTarget("head_cat.png", CCPointMake(680.0, FLOOR_HEIGHT+58.0f), 0.0f, true, false, true);
+    this->createTarget("head_dog.png", CCPointMake(740.0, FLOOR_HEIGHT+58.0f), 0.0f, true, false, true);
+    
+    // 2 bricks at the right of the first block
+    this->createTarget("brick_2.png", CCPointMake(770.0, FLOOR_HEIGHT), 0.0f, false, false, false);
+    this->createTarget("brick_2.png", CCPointMake(770.0, FLOOR_HEIGHT+46.0f), 0.0f, false, false, false);
+    
+    // The dog between the blocks
+    this->createTarget("head_dog.png", CCPointMake(830.0, FLOOR_HEIGHT), 0.0f, true, false, true);
+    
+    // Second block
+    this->createTarget("brick_platform.png", CCPointMake(839.0, FLOOR_HEIGHT), 0.0f, false, true, false);
+    this->createTarget("brick_2.png", CCPointMake(854.0, FLOOR_HEIGHT+28.0f), 0.0f, false, false, false);
+    this->createTarget("brick_2.png", CCPointMake(854.0, FLOOR_HEIGHT+28.0f+46.0f), 0.0f, false, false, false);
+    this->createTarget("head_cat.png", CCPointMake(881.0, FLOOR_HEIGHT+28.0f), 0.0f, true, false, true);
+    this->createTarget("brick_2.png", CCPointMake(909.0, FLOOR_HEIGHT+28.0f), 0.0f, false, false, false);
+    this->createTarget("brick_1.png", CCPointMake(909.0, FLOOR_HEIGHT+28.0f+46.0f), 0.0f, false, false, false);
+    this->createTarget("brick_1.png", CCPointMake(909.0, FLOOR_HEIGHT+28.0f+46.0f+23.0f), 0.0f, false, false, false);
+    this->createTarget("brick_2.png", CCPointMake(882.0, FLOOR_HEIGHT+108.0f), 90.0f, false, false, false);
+
+}
+
+void HelloWorld::createTarget(const char *imageName, CCPoint position, float rotation, bool isCircle, bool isStatic, bool isEnemy)
+{
+    CCSprite *sprite = CCSprite::spriteWithFile(imageName);
+    this->addChild(sprite, 1);
+    
+    b2BodyDef bodyDef;
+    bodyDef.type = isStatic?b2_staticBody:b2_dynamicBody;
+    bodyDef.position.Set((position.x+sprite->getContentSize().width/2.0f)/PTM_RATIO,
+                         (position.y+sprite->getContentSize().height/2.0f)/PTM_RATIO);
+    bodyDef.angle = CC_DEGREES_TO_RADIANS(rotation);
+    bodyDef.userData = sprite;
+    b2Body *body = m_world->CreateBody(&bodyDef);
+    
+    b2FixtureDef boxDef;
+    if (isCircle)
+    {
+        b2CircleShape circle;
+        circle.m_radius = sprite->getContentSize().width/2.0f/PTM_RATIO;
+        boxDef.shape = &circle;
+    }
+    else
+    {
+        b2PolygonShape box;
+        box.SetAsBox(sprite->getContentSize().width/2.0f/PTM_RATIO, sprite->getContentSize().height/2.0f/PTM_RATIO);
+        boxDef.shape = &box;
+    }
+    
+    if (isEnemy)
+    {
+        boxDef.userData = (void*)1;
+        m_enemies.push_back(body);
+    }
+    
+    boxDef.density = 0.5f;
+    body->CreateFixture(&boxDef);
+    
+    m_targets.push_back(body);
+}
+
 bool HelloWorld::attachBullet()
 {
     if (m_currentBullet < m_bullets.size())
@@ -220,10 +280,29 @@ bool HelloWorld::attachBullet()
     return false;
 }
 
+void HelloWorld::resetBullet()
+{
+    if (m_enemies.size() == 0)
+    {
+        // game over
+        // We'll do something here later
+    }
+    else if (this->attachBullet())
+    {
+        this->runAction(CCMoveTo::actionWithDuration(2.0f, CCPointZero));
+    }
+    else
+    {
+        // We can reset the whole scene here
+        // Also, let's do this later
+    }
+}
+
 void HelloWorld::resetGame()
 {
     this->createBullets(4);
     this->attachBullet();
+    this->createTargets();
 }
 
 void HelloWorld::draw()
@@ -280,6 +359,15 @@ void HelloWorld::tick(ccTime dt)
             m_world->DestroyJoint(m_bulletJoint);
             m_bulletJoint = NULL;
             
+            // set up the time delay
+            CCDelayTime *delayAction = CCDelayTime::actionWithDuration(5);
+            // perform the selector call
+            CCCallFunc *callSelectorAction = CCCallFunc::actionWithTarget(this, 
+                                                                          callfunc_selector(HelloWorld::resetBullet));
+            // run the action
+            this->runAction(CCSequence::actions(delayAction,
+                                                callSelectorAction,
+                                                NULL));
         }
     }
     
